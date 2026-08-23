@@ -1,0 +1,547 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta name="robots" content="noindex,nofollow"><meta name="generator" content="ShipPage"><link rel="canonical" href="https://shippage.ai/p/jifen">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>积分小管家</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <div class="header">
+        <div class="header-left">
+            <div class="back-btn" id="back-btn" onclick="goBack()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            </div>
+            <h1 id="mode-title">家长模式</h1>
+        </div>
+        <div class="header-right">
+            <a href="README.html" class="header-help">说明</a>
+            <span class="header-member" id="header-member"></span>
+        </div>
+    </div>
+    
+    <!-- 底部导航菜单 -->
+    <div class="bottom-nav">
+        <div class="nav-item active" id="nav-parent" onclick="switchMode('parent')">
+            <div class="nav-icon" data-icon="home"></div>
+            <div class="nav-text">家长模式</div>
+        </div>
+        <div class="nav-item" id="nav-teacher" onclick="switchMode('teacher')">
+            <div class="nav-icon" data-icon="book"></div>
+            <div class="nav-text">教师模式</div>
+        </div>
+    </div>
+    
+    <!-- 首页 -->
+    <div class="page active" id="home-page">
+        <!-- 成员栏（切换/管理多人积分） -->
+        <div class="member-bar" id="member-bar">
+            <!-- 动态加载 -->
+        </div>
+        
+        <!-- 积分卡片（总积分 + 今日积分合并） -->
+        <div class="points-card">
+            <div class="points-header">
+                <div class="points-title" id="points-title">
+                    <span class="points-name"></span>
+                    <span class="points-label">总积分</span>
+                </div>
+                <div class="points-amount" id="total-points">0</div>
+            </div>
+            <div class="points-today">
+                <div class="today-label">
+                    <span>今日</span>
+                    <span>积分</span>
+                </div>
+                <span class="today-divider"></span>
+                <div class="today-value" id="daily-challenge">
+                    <span class="today-detail">赚0分 - 扣0分</span>
+                    <span class="today-total">= 0分</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 功能入口 -->
+        <div class="features">
+            <div class="feature-item" onclick="switchPage('earn')">
+                <div class="feature-icon" data-icon="plus"></div>
+                <div class="feature-name">赚取积分</div>
+            </div>
+            <div class="feature-item" onclick="switchPage('deduct')">
+                <div class="feature-icon" data-icon="minus"></div>
+                <div class="feature-name">扣取积分</div>
+            </div>
+            <div class="feature-item" onclick="switchPage('exchange')">
+                <div class="feature-icon" data-icon="exchange"></div>
+                <div class="feature-name">奖励兑换中心</div>
+            </div>
+            <div class="feature-item" onclick="switchPage('earn-manage')">
+                <div class="feature-icon" data-icon="tag"></div>
+                <div class="feature-name">积分项设置</div>
+            </div>
+            <div class="feature-item" onclick="switchPage('deduct-manage')">
+                <div class="feature-icon" data-icon="warn"></div>
+                <div class="feature-name">扣分项设置</div>
+            </div>
+            <div class="feature-item" onclick="switchPage('exchange-manage')">
+                <div class="feature-icon" data-icon="gift"></div>
+                <div class="feature-name">兑换奖励设置</div>
+            </div>
+        </div>
+        
+        <!-- 本周积分 -->
+        <div class="content-section">
+            <div class="section-title">
+                <span id="week-score-text">本周积分</span>
+            </div>
+            <div class="week-stats">
+                <div class="week-grid" id="current-week-grid">
+                    <!-- 动态加载 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 快捷工具 -->
+        <div class="features">
+            <div class="feature-item" onclick="switchPage('records')">
+                <div class="feature-icon" data-icon="chart"></div>
+                <div class="feature-name">积分记录</div>
+            </div>
+            <div class="feature-item" onclick="showClearPointsModal()">
+                <div class="feature-icon" data-icon="trash"></div>
+                <div class="feature-name">积分清空</div>
+            </div>
+            <div class="feature-item" onclick="showSystemResetModal()">
+                <div class="feature-icon" data-icon="refresh"></div>
+                <div class="feature-name">系统重置</div>
+            </div>
+            <div class="feature-item" onclick="showDataImportExportModal()">
+                <div class="feature-icon" data-icon="download"></div>
+                <div class="feature-name">导入导出</div>
+            </div>
+            <div class="feature-item" onclick="showPasswordSettingModal()">
+                <div class="feature-icon" data-icon="lock"></div>
+                <div class="feature-name">密码设置</div>
+            </div>
+            <div class="feature-item" onclick="switchPage('leaderboard')">
+                <div class="feature-icon" data-icon="trophy"></div>
+                <div class="feature-name">积分排行榜</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 赚取积分页面 -->
+    <div class="page" id="earn-page">
+        <div class="content-section">
+            <div class="section-title">
+                <span>赚取积分</span>
+            </div>
+            <div id="earn-list">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 扣取积分页面 -->
+    <div class="page" id="deduct-page">
+        <div class="content-section">
+            <div class="section-title">
+                <span>扣取积分</span>
+            </div>
+            <div id="deduct-list">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 兑换中心页面 -->
+    <div class="page" id="exchange-page">
+        <div class="content-section">
+            <div class="section-title">
+                <span>兑换中心</span>
+            </div>
+            <div id="exchange-list">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 赚取积分项管理页面 -->
+    <div class="page" id="earn-manage-page">
+        <div class="content-section">
+            <div class="section-title">
+                <span>赚取积分项管理</span>
+                <div class="section-actions">
+                    <button class="action-btn add" onclick="showAddEarnItemModal()">+ 添加</button>
+                </div>
+            </div>
+            <div id="earn-manage-list">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 扣取积分项管理页面 -->
+    <div class="page" id="deduct-manage-page">
+        <div class="content-section">
+            <div class="section-title">
+                <span>扣取积分项管理</span>
+                <div class="section-actions">
+                    <button class="action-btn add" onclick="showAddDeductItemModal()">+ 添加</button>
+                </div>
+            </div>
+            <div id="deduct-manage-list">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 兑换奖励管理页面 -->
+    <div class="page" id="exchange-manage-page">
+        <div class="content-section">
+            <div class="section-title">
+                <span>兑换奖励管理</span>
+                <div class="section-actions">
+                    <button class="action-btn add" onclick="showAddRewardModal()">+ 添加</button>
+                </div>
+            </div>
+            <div id="reward-manage-list">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 积分记录页面 -->
+    <div class="page" id="records-page">
+        <div class="content-section">
+            <div class="section-title">
+                <span id="records-week-score-text">本周积分</span>
+                <div class="section-actions">
+                    <button class="action-btn add" onclick="showAddPointsModal()">补积分</button>
+                </div>
+            </div>
+            <div class="week-stats">
+                <div class="week-grid" id="records-week-grid">
+                    <!-- 动态加载 -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-section">
+            <div class="section-title">每日积分记录</div>
+            <div class="record-list" id="day-records">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+        
+        <div class="content-section">
+            <div class="section-title">历史积分</div>
+            <div id="history-weeks">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 积分排行榜页面 -->
+    <div class="page" id="leaderboard-page">
+        <div class="content-section">
+            <div class="section-title">
+                <span>积分排行榜</span>
+            </div>
+            <div id="leaderboard-list">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加赚取积分项弹窗 -->
+    <div class="modal" id="add-earn-item-modal">
+        <div class="modal-content">
+            <div class="modal-title" id="earn-item-modal-title">添加赚取积分项</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">项目名称</label>
+                    <input type="text" class="form-input" id="earn-item-name" placeholder="例如：完成作业">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">积分数量</label>
+                    <input type="number" class="form-input" id="earn-item-points" placeholder="例如：10">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('add-earn-item-modal')">取消</button>
+                <button class="modal-btn confirm" onclick="saveEarnItem()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加扣取积分项弹窗 -->
+    <div class="modal" id="add-deduct-item-modal">
+        <div class="modal-content">
+            <div class="modal-title" id="deduct-item-modal-title">添加扣取积分项</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">项目名称</label>
+                    <input type="text" class="form-input" id="deduct-item-name" placeholder="例如：未完成作业">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">积分数量</label>
+                    <input type="number" class="form-input" id="deduct-item-points" placeholder="例如：10">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('add-deduct-item-modal')">取消</button>
+                <button class="modal-btn confirm" onclick="saveDeductItem()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加兑换奖励弹窗 -->
+    <div class="modal" id="add-reward-modal">
+        <div class="modal-content">
+            <div class="modal-title" id="reward-modal-title">添加兑换奖励</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">奖励名称</label>
+                    <input type="text" class="form-input" id="reward-name" placeholder="例如：看电视30分钟">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">所需积分</label>
+                    <input type="number" class="form-input" id="reward-points" placeholder="例如：50">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('add-reward-modal')">取消</button>
+                <button class="modal-btn confirm" onclick="saveReward()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 兑换确认弹窗 -->
+    <div class="modal" id="exchange-confirm-modal">
+        <div class="modal-content">
+            <div class="modal-title">确认兑换</div>
+            <div class="modal-body">
+                <p id="exchange-reward-name">看电视30分钟</p>
+                <p style="color: #667eea; font-weight: 700; font-size: 20px; margin-top: 10px;" id="exchange-reward-points">50积分</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('exchange-confirm-modal')">取消</button>
+                <button class="modal-btn confirm" onclick="confirmExchange()">确认兑换</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 补积分弹窗 -->
+    <div class="modal" id="add-points-modal">
+        <div class="modal-content">
+            <div class="modal-title">补积分</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">补积分原因</label>
+                    <input type="text" class="form-input" id="add-points-reason" placeholder="例如：忘记记录的作业完成">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">积分数值</label>
+                    <input type="number" class="form-input" id="add-points-value" placeholder="例如：10">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">选择日期</label>
+                    <input type="date" class="form-input" id="add-points-date">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('add-points-modal')">取消</button>
+                <button class="modal-btn confirm" onclick="addPoints()">确认补积分</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 清空积分确认弹窗 -->
+    <div class="modal" id="clear-points-modal">
+        <div class="modal-content">
+            <div class="modal-title">确认清空积分</div>
+            <div class="modal-body">
+                <p>确定要清空当前成员的所有积分吗？清空的积分会生成一条记录，可通过撤销记录恢复。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('clear-points-modal')">取消</button>
+                <button class="modal-btn danger" onclick="confirmClearPoints()">确认清空</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 系统重置选项弹窗 -->
+    <div class="modal" id="system-reset-modal">
+        <div class="modal-content">
+            <div class="modal-title">系统重置</div>
+            <div class="modal-body">
+                <p>请选择重置范围：「重置参数项」只恢复默认积分项；「重置当前成员/全部成员」会清空对应积分和记录，并恢复默认积分项。</p>
+            </div>
+            <div class="modal-footer system-reset-footer">
+                <button class="modal-btn danger" onclick="systemReset('settings')">重置参数项</button>
+                <button class="modal-btn danger" onclick="systemReset('current')">重置当前成员</button>
+                <button class="modal-btn danger" onclick="systemReset('all')">重置全部成员</button>
+                <button class="modal-btn cancel" onclick="closeModal('system-reset-modal')">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 删除确认弹窗 -->
+    <div class="modal" id="delete-confirm-modal">
+        <div class="modal-content">
+            <div class="modal-title">确认删除</div>
+            <div class="modal-body">
+                <p id="delete-confirm-text">确定要删除此项目吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('delete-confirm-modal')">取消</button>
+                <button class="modal-btn danger" onclick="confirmDelete()">确认删除</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 成员管理弹窗 -->
+    <div class="modal" id="member-manage-modal">
+        <div class="modal-content">
+            <div class="modal-title">成员管理</div>
+            <div class="modal-body">
+                <div id="member-manage-list">
+                    <!-- 动态加载 -->
+                </div>
+                <button class="action-btn add" style="width:100%;padding:10px;" onclick="showAddMemberModal()">+ 添加成员</button>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('member-manage-modal')">关闭</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 成员编辑弹窗（添加/改名） -->
+    <div class="modal" id="member-edit-modal">
+        <div class="modal-content">
+            <div class="modal-title" id="member-edit-modal-title">添加成员</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" id="member-name-label">成员名字</label>
+                    <textarea class="form-input" id="member-name-input" rows="3" placeholder="例如：小明"></textarea>
+                    <div class="form-hint" id="member-name-hint" style="display:none; font-size:12px; color:#999; margin-top:6px;">每行一个名字，支持批量添加</div>
+                </div>
+                <div class="form-group" style="margin-top:12px;">
+                    <label class="form-label">分组</label>
+                    <input type="text" class="form-input" id="member-group-input" placeholder="例如：一班、数学组" />
+                    <div class="form-hint" style="font-size:12px; color:#999; margin-top:6px;">可按班级或科目分组</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('member-edit-modal')">取消</button>
+                <button class="modal-btn confirm" onclick="saveMember()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 数据导入导出弹窗 -->
+    <div class="modal" id="data-import-export-modal">
+        <div class="modal-content">
+            <div class="modal-title">数据导入导出</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">导出类型</label>
+                    <select class="form-input" id="export-type">
+                        <option value="full">全部导出</option>
+                        <option value="settings">设置项导出</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">导出范围</label>
+                    <select class="form-input" id="export-scope">
+                        <option value="current">仅当前模式</option>
+                        <option value="both">两个模式</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button class="modal-btn confirm" style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:6px;" onclick="exportData()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>导出</button>
+                </div>
+                <div class="form-divider"></div>
+                <div class="form-group">
+                    <label class="form-label">导入数据</label>
+                    <input type="file" class="form-input" id="import-file" accept=".json" onchange="importData(this)" style="display:none;">
+                </div>
+                <div class="form-group">
+                    <button class="modal-btn confirm" style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:6px;" onclick="document.getElementById('import-file').click()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>选择文件导入</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('data-import-export-modal')">关闭</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 密码设置弹窗 -->
+    <div class="modal" id="password-setting-modal">
+        <div class="modal-content">
+            <div class="modal-title">密码设置</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">当前状态</label>
+                    <div id="password-status" style="font-size:14px; color:#666;">未设置</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">新密码</label>
+                    <input type="password" class="form-input" id="new-password" placeholder="输入密码">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">确认密码</label>
+                    <input type="password" class="form-input" id="confirm-password" placeholder="再次输入密码">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('password-setting-modal')">关闭</button>
+                <button class="modal-btn danger" id="disable-password-btn" onclick="disablePassword()" style="display:none;">取消密码</button>
+                <button class="modal-btn confirm" onclick="savePassword()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 密码输入弹窗 -->
+    <div class="modal" id="password-entry-modal">
+        <div class="modal-content">
+            <div class="modal-title">请输入密码</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="password" class="form-input" id="entry-password" placeholder="密码">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn confirm" style="width:100%;" onclick="checkPassword()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+
+    
+    <!-- 备案信息 -->
+    <div class="beian-bar">
+        <div class="beian-pc">
+            <span class="beian-disclaimer">本站内容仅供学习和交流，非商业用途</span>
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="beian-icp">浙ICP备2025187466号</a>
+            <a href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=33030402001483" target="_blank" rel="noopener noreferrer" class="beian-gongan">
+                <img src="https://www.937788.xyz/gonganbeian.png" alt="公安备案" onerror="this.style.display='none'">
+                浙公网安备33030402001483号
+            </a>
+        </div>
+        <div class="beian-mobile">
+            <span class="beian-disclaimer">本站内容仅供学习和交流，非商业用途</span>
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="beian-icp">浙ICP备2025187466号</a>
+            <a href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=33030402001483" target="_blank" rel="noopener noreferrer" class="beian-gongan">
+                <img src="https://www.937788.xyz/gonganbeian.png" alt="公安备案" onerror="this.style.display='none'">
+                浙公网安备33030402001483号
+            </a>
+        </div>
+    </div>
+</body>
+</html>
