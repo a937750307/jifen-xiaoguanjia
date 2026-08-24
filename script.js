@@ -1798,7 +1798,11 @@
                     return decodeURIComponent(stored);
                 } catch (e) { /* 回退到旧格式解码 */ }
             }
-            return atob(stored);
+            try {
+                return atob(stored);
+            } catch (e) {
+                return stored;
+            }
         }
         
         function showPasswordSettingModal() {
@@ -1862,7 +1866,8 @@
                 return;
             }
             try {
-                if (decodeStoredPassword(stored) === input) {
+                // 兼容无特殊字符的密码：encodeURIComponent 后可能与原密码相同，直接比较 raw stored
+                if (stored === input || decodeStoredPassword(stored) === input) {
                     closeModal('password-entry-modal');
                 } else {
                     // 密码错误：清空输入框并聚焦，明确提示用户重新输入
