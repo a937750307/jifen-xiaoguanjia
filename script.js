@@ -17,7 +17,8 @@
             download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>',
             upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>',
             lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-            trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1 0-4h2"/><path d="M6 5H20V7C20 11 18 13 14 14.5V18H16V22H8V18H10V14.5C6 13 4 11 4 7V5Z"/><path d="M18 5V3H6V5"/></svg>'
+            trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1 0-4h2"/><path d="M6 5H20V7C20 11 18 13 14 14.5V18H16V22H8V18H10V14.5C6 13 4 11 4 7V5Z"/><path d="M18 5V3H6V5"/></svg>',
+            batch: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'
         };
         
         // 注入 SVG 图标到带 data-icon  的元素
@@ -154,6 +155,7 @@
         let selectedDate = null;
         let displayYear = null;
         let displayMonth = null;
+        let currentItemsTab = 'earn';
         
         // 迁移旧版数据到成员结构：旧键（无模式前缀）→ 模式键 → 默认成员，保证老数据不丢失
         function migrateLegacyData() {
@@ -517,7 +519,112 @@
                 renderMemberManageList();
             }
         }
-        
+
+        // 批量加减分相关
+        let batchSelectedIds = new Set();
+
+        function showBatchOperationModal() {
+            batchSelectedIds = new Set();
+            document.getElementById('batch-event-name').value = '';
+            document.getElementById('batch-points').value = '';
+            renderBatchMemberList();
+            updateBatchSelectedCount();
+            document.getElementById('batch-operation-modal').classList.add('show');
+        }
+
+        function renderBatchMemberList() {
+            const container = document.getElementById('batch-member-list');
+            if (members.length === 0) {
+                container.innerHTML = '<div class="empty-text">没有可选成员</div>';
+                return;
+            }
+            container.innerHTML = members.map(m => {
+                const display = m.group ? `${m.name} (${m.group})` : m.name;
+                return `
+                    <div class="batch-member-item" onclick="toggleBatchMember(${m.id})">
+                        <input type="checkbox" class="batch-member-checkbox" data-id="${m.id}" ${batchSelectedIds.has(m.id) ? 'checked' : ''} onclick="event.stopPropagation(); toggleBatchMember(${m.id})">
+                        <div class="batch-member-info">
+                            <div class="batch-member-name">${display}</div>
+                            <div class="batch-member-points">积分: ${m.totalPoints || 0}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleBatchMember(memberId) {
+            if (batchSelectedIds.has(memberId)) {
+                batchSelectedIds.delete(memberId);
+            } else {
+                batchSelectedIds.add(memberId);
+            }
+            renderBatchMemberList();
+            updateBatchSelectedCount();
+        }
+
+        function selectAllBatchMembers() {
+            members.forEach(m => batchSelectedIds.add(m.id));
+            renderBatchMemberList();
+            updateBatchSelectedCount();
+        }
+
+        function deselectAllBatchMembers() {
+            batchSelectedIds.clear();
+            renderBatchMemberList();
+            updateBatchSelectedCount();
+        }
+
+        function updateBatchSelectedCount() {
+            document.getElementById('batch-selected-count').textContent = `已选 ${batchSelectedIds.size} 人`;
+        }
+
+        function submitBatchPoints(type) {
+            const eventName = document.getElementById('batch-event-name').value.trim();
+            const amount = parseInt(document.getElementById('batch-points').value);
+            if (!eventName) {
+                showAlert('请输入事件名称');
+                return;
+            }
+            if (!amount || amount <= 0) {
+                showAlert('请输入有效分值');
+                return;
+            }
+            if (batchSelectedIds.size === 0) {
+                showAlert('请至少选择一名成员');
+                return;
+            }
+
+            const actionText = type === 'income' ? '加分' : '扣分';
+            const title = `${eventName}（批量${actionText}）`;
+            const value = type === 'income' ? amount : -amount;
+            const now = new Date();
+            const dateStr = formatDate(now);
+            const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+            batchSelectedIds.forEach(memberId => {
+                const m = members.find(x => x.id === memberId);
+                if (!m) return;
+                m.totalPoints += value;
+                m.recordIdCounter++;
+                m.records.unshift({
+                    id: m.recordIdCounter,
+                    title: title,
+                    amount: value,
+                    type: type,
+                    date: dateStr,
+                    time: timeStr
+                });
+            });
+
+            syncFromMember();
+            saveData();
+            renderMemberBar();
+            updatePointsDisplay();
+            updateTodayPointsDisplay();
+            closeModal('batch-operation-modal');
+            showAlert(`已为 ${batchSelectedIds.size} 名成员${type === 'income' ? '加' : '扣'}分`);
+        }
+
         // 更新积分显示
         function updatePointsDisplay() {
             document.getElementById('total-points').textContent = totalPoints.toLocaleString();
@@ -536,12 +643,11 @@
         
         // 页面标题映射
         const PAGE_TITLES = {
-            'home': '家长模式',
+            'home': '积分小管家',
             'earn': '赚取积分',
-            'deduct': '扣取积分',
+            'deduct': '扣减积分',
             'exchange': '奖励兑换',
-            'earn-manage': '赚取积分项管理',
-            'deduct-manage': '扣取积分项管理',
+            'items-manage': '积分项管理',
             'exchange-manage': '兑换奖励管理',
             'records': '积分记录'
         };
@@ -550,16 +656,22 @@
         function updateHeader(pageName) {
             const backBtn = document.getElementById('back-btn');
             const titleEl = document.getElementById('mode-title');
+            const modeEl = document.getElementById('header-mode');
             const memberEl = document.getElementById('header-member');
+            const helpEl = document.getElementById('header-help');
             const modeText = currentMode === 'parent' ? '家长模式' : '教师模式';
             
             if (pageName === 'home') {
                 backBtn.classList.remove('show');
-                titleEl.textContent = '积分小管家-' + modeText;
+                titleEl.textContent = '积分小管家';
+                modeEl.textContent = modeText;
+                modeEl.style.display = '';
                 memberEl.textContent = '';
             } else {
                 backBtn.classList.add('show');
                 titleEl.textContent = PAGE_TITLES[pageName] || '';
+                modeEl.textContent = '';
+                modeEl.style.display = 'none';
                 // 排行榜不显示当前成员名
                 if (pageName === 'leaderboard') {
                     memberEl.textContent = '';
@@ -567,6 +679,10 @@
                     const m = getCurrentMember();
                     memberEl.textContent = m ? m.name : '';
                 }
+            }
+            // 说明按钮只在首页显示
+            if (helpEl) {
+                helpEl.style.display = (pageName === 'home') ? 'inline-block' : 'none';
             }
             document.title = '积分小管家-' + modeText;
         }
@@ -608,10 +724,8 @@
                 loadDeductList();
             } else if (pageName === 'exchange') {
                 loadExchangeList();
-            } else if (pageName === 'earn-manage') {
-                loadEarnManageList();
-            } else if (pageName === 'deduct-manage') {
-                loadDeductManageList();
+            } else if (pageName === 'items-manage') {
+                loadItemsManageList();
             } else if (pageName === 'exchange-manage') {
                 loadRewardManageList();
             } else if (pageName === 'records') {
@@ -677,21 +791,21 @@
             listContainer.innerHTML = html;
         }
         
-        // 加载扣取积分列表
+        // 加载扣减积分列表
         function loadDeductList() {
             const listContainer = document.getElementById('deduct-list');
             let html = `
                 <div class="quick-add deduct">
                     <input class="qa-name" id="quick-deduct-name" placeholder="名称（留空则用日期）">
                     <input class="qa-points" id="quick-deduct-points" type="number" placeholder="积分">
-                    <button class="qa-btn" onclick="quickDeduct()">扣取</button>
+                    <button class="qa-btn" onclick="quickDeduct()">扣减</button>
                 </div>
             `;
             if (deductItems.length === 0) {
                 html += `
                     <div class="empty-state compact">
                         <div class="empty-icon">${ICONS.warn}</div>
-                        <div class="empty-title">暂无扣取积分项</div>
+                        <div class="empty-title">暂无扣减积分项</div>
                         <div class="empty-subtitle">先去「扣分项设置」添加吧</div>
                     </div>
                 `;
@@ -702,7 +816,7 @@
                             <div class="item-name">${item.name}</div>
                             <div class="item-points expense">${item.points}积分</div>
                         </div>
-                        <button class="item-btn deduct" onclick="deductPoints(${item.id})">扣取</button>
+                        <button class="item-btn deduct" onclick="deductPoints(${item.id})">扣减</button>
                     </div>
                 `).join('');
             }
@@ -769,14 +883,14 @@
             `).join('');
         }
         
-        // 加载扣取积分项管理列表
+        // 加载扣减积分项管理列表
         function loadDeductManageList() {
             const listContainer = document.getElementById('deduct-manage-list');
             if (deductItems.length === 0) {
                 listContainer.innerHTML = `
                     <div class="empty-state compact">
                         <div class="empty-icon">${ICONS.warn}</div>
-                        <div class="empty-title">暂无扣取积分项</div>
+                        <div class="empty-title">暂无扣减积分项</div>
                         <div class="empty-subtitle">点击右上角「添加」按钮创建</div>
                     </div>
                 `;
@@ -795,6 +909,24 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        // 加载积分项管理页面（合并赚取/扣减积分项）
+        function loadItemsManageList() {
+            loadEarnManageList();
+            loadDeductManageList();
+            switchItemsTab(currentItemsTab);
+        }
+
+        function switchItemsTab(tab) {
+            currentItemsTab = tab;
+            document.querySelectorAll('.items-tab').forEach(el => {
+                el.classList.toggle('active', el.dataset.tab === tab);
+            });
+            document.getElementById('earn-manage-list').style.display = tab === 'earn' ? 'block' : 'none';
+            document.getElementById('deduct-manage-list').style.display = tab === 'deduct' ? 'block' : 'none';
+            document.getElementById('items-manage-title').textContent = tab === 'earn' ? '赚取积分项管理' : '扣减积分项管理';
+            document.getElementById('items-add-btn').onclick = tab === 'earn' ? showAddEarnItemModal : showAddDeductItemModal;
         }
         
         // 加载奖励管理列表
@@ -1100,7 +1232,7 @@
             showAlert(`赚取 +${points} 积分`);
         }
         
-        // 快速扣取积分（自定义填入）
+        // 快速扣减积分（自定义填入）
         function quickDeduct() {
             const nameEl = document.getElementById('quick-deduct-name');
             const pointsEl = document.getElementById('quick-deduct-points');
@@ -1114,7 +1246,7 @@
             updatePointsDisplay();
             updateTodayPointsDisplay();
             saveData();
-            showAlert(`扣取 -${points} 积分`);
+            showAlert(`扣减 -${points} 积分`);
         }
         
         // 快速兑换（自定义填入）
@@ -1182,7 +1314,7 @@
             alertModalEl.classList.add('show');
         }
         
-        // 扣取积分
+        // 扣减积分
         function deductPoints(itemId) {
             const item = deductItems.find(i => i.id === itemId);
             if (item) {
@@ -1191,7 +1323,7 @@
                 updatePointsDisplay();
                 updateTodayPointsDisplay();
                 saveData();
-                showAlert(`成功扣取${Math.abs(item.points)}积分！`);
+                showAlert(`成功扣减${Math.abs(item.points)}积分！`);
             }
         }
         
@@ -1265,28 +1397,28 @@
             document.getElementById('delete-confirm-modal').classList.add('show');
         }
         
-        // 显示添加扣取积分项弹窗
+        // 显示添加扣减积分项弹窗
         function showAddDeductItemModal() {
             currentEditItem = null;
-            document.getElementById('deduct-item-modal-title').textContent = '添加扣取积分项';
+            document.getElementById('deduct-item-modal-title').textContent = '添加扣减积分项';
             document.getElementById('deduct-item-name').value = '';
             document.getElementById('deduct-item-points').value = '';
             document.getElementById('add-deduct-item-modal').classList.add('show');
         }
         
-        // 编辑扣取积分项
+        // 编辑扣减积分项
         function editDeductItem(itemId) {
             const item = deductItems.find(i => i.id === itemId);
             if (item) {
                 currentEditItem = item;
-                document.getElementById('deduct-item-modal-title').textContent = '编辑扣取积分项';
+                document.getElementById('deduct-item-modal-title').textContent = '编辑扣减积分项';
                 document.getElementById('deduct-item-name').value = item.name;
                 document.getElementById('deduct-item-points').value = Math.abs(item.points);
                 document.getElementById('add-deduct-item-modal').classList.add('show');
             }
         }
         
-        // 保存扣取积分项
+        // 保存扣减积分项
         function saveDeductItem() {
             const name = document.getElementById('deduct-item-name').value.trim();
             const points = parseInt(document.getElementById('deduct-item-points').value);
@@ -1311,7 +1443,7 @@
             closeModal('add-deduct-item-modal');
         }
         
-        // 删除扣取积分项
+        // 删除扣减积分项
         function deleteDeductItem(itemId) {
             currentDeleteItem = itemId;
             currentDeleteType = 'deduct';

@@ -110,6 +110,7 @@
         }
         
         .header-help {
+            display: none;
             font-size: 13px;
             color: var(--primary);
             text-decoration: none;
@@ -159,6 +160,23 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        .header-title-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .header-mode {
+            font-size: 12px;
+            color: var(--primary);
+            opacity: 0.85;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-top: 2px;
         }
         
         .header-member {
@@ -1390,4 +1408,127 @@
             .beian-mobile {
                 display: none;
             }
+        }
+
+        /* 批量加减分入口 */
+        .header-batch {
+            font-size: 13px;
+            color: var(--primary);
+            padding: 4px 10px;
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .header-batch:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .batch-actions-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .batch-count {
+            font-size: 13px;
+            color: #666;
+            margin-left: auto;
+        }
+
+        .batch-member-list {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .batch-member-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .batch-member-item:active {
+            transform: scale(0.98);
+        }
+
+        .batch-member-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .batch-member-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .batch-member-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .batch-member-points {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* 积分项管理标签页 */
+        #items-manage-page {
+            padding-top: 15px;
+        }
+
+        .items-manage-tabs {
+            display: flex;
+            margin: 0 20px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .items-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            background: white;
+            border: 1px solid var(--primary-border);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: -1px;
+        }
+
+        .items-tab:first-child {
+            margin-left: 0;
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .items-tab:last-child {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .items-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            position: relative;
+            z-index: 1;
         }

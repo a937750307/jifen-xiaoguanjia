@@ -14,10 +14,13 @@
             <div class="back-btn" id="back-btn" onclick="goBack()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
             </div>
-            <h1 id="mode-title">家长模式</h1>
+            <div class="header-title-group">
+                <h1 id="mode-title">积分小管家</h1>
+                <span class="header-mode" id="header-mode">家长模式</span>
+            </div>
         </div>
         <div class="header-right">
-            <a href="README.html" class="header-help">说明</a>
+            <a href="README.html" class="header-help" id="header-help">使用说明</a>
             <span class="header-member" id="header-member"></span>
         </div>
     </div>
@@ -71,23 +74,23 @@
             </div>
             <div class="feature-item" onclick="switchPage('deduct')">
                 <div class="feature-icon" data-icon="minus"></div>
-                <div class="feature-name">扣取积分</div>
+                <div class="feature-name">扣减积分</div>
             </div>
-            <div class="feature-item" onclick="switchPage('exchange')">
-                <div class="feature-icon" data-icon="exchange"></div>
-                <div class="feature-name">奖励兑换中心</div>
+            <div class="feature-item" onclick="showBatchOperationModal()">
+                <div class="feature-icon" data-icon="batch"></div>
+                <div class="feature-name">批量加减分</div>
             </div>
-            <div class="feature-item" onclick="switchPage('earn-manage')">
+            <div class="feature-item" onclick="switchPage('items-manage')">
                 <div class="feature-icon" data-icon="tag"></div>
-                <div class="feature-name">积分项设置</div>
-            </div>
-            <div class="feature-item" onclick="switchPage('deduct-manage')">
-                <div class="feature-icon" data-icon="warn"></div>
-                <div class="feature-name">扣分项设置</div>
+                <div class="feature-name">积分项管理</div>
             </div>
             <div class="feature-item" onclick="switchPage('exchange-manage')">
                 <div class="feature-icon" data-icon="gift"></div>
                 <div class="feature-name">兑换奖励设置</div>
+            </div>
+            <div class="feature-item" onclick="switchPage('exchange')">
+                <div class="feature-icon" data-icon="exchange"></div>
+                <div class="feature-name">奖励兑换中心</div>
             </div>
         </div>
         
@@ -144,11 +147,11 @@
         </div>
     </div>
     
-    <!-- 扣取积分页面 -->
+    <!-- 扣减积分页面 -->
     <div class="page" id="deduct-page">
         <div class="content-section">
             <div class="section-title">
-                <span>扣取积分</span>
+                <span>扣减积分</span>
             </div>
             <div id="deduct-list">
                 <!-- 动态加载 -->
@@ -168,36 +171,6 @@
         </div>
     </div>
     
-    <!-- 赚取积分项管理页面 -->
-    <div class="page" id="earn-manage-page">
-        <div class="content-section">
-            <div class="section-title">
-                <span>赚取积分项管理</span>
-                <div class="section-actions">
-                    <button class="action-btn add" onclick="showAddEarnItemModal()">+ 添加</button>
-                </div>
-            </div>
-            <div id="earn-manage-list">
-                <!-- 动态加载 -->
-            </div>
-        </div>
-    </div>
-    
-    <!-- 扣取积分项管理页面 -->
-    <div class="page" id="deduct-manage-page">
-        <div class="content-section">
-            <div class="section-title">
-                <span>扣取积分项管理</span>
-                <div class="section-actions">
-                    <button class="action-btn add" onclick="showAddDeductItemModal()">+ 添加</button>
-                </div>
-            </div>
-            <div id="deduct-manage-list">
-                <!-- 动态加载 -->
-            </div>
-        </div>
-    </div>
-    
     <!-- 兑换奖励管理页面 -->
     <div class="page" id="exchange-manage-page">
         <div class="content-section">
@@ -210,6 +183,24 @@
             <div id="reward-manage-list">
                 <!-- 动态加载 -->
             </div>
+        </div>
+    </div>
+    
+    <!-- 积分项管理页面（合并赚取/扣减积分项管理） -->
+    <div class="page" id="items-manage-page">
+        <div class="items-manage-tabs">
+            <div class="items-tab active" data-tab="earn" onclick="switchItemsTab('earn')">赚取积分项</div>
+            <div class="items-tab" data-tab="deduct" onclick="switchItemsTab('deduct')">扣减积分项</div>
+        </div>
+        <div class="content-section">
+            <div class="section-title">
+                <span id="items-manage-title">赚取积分项管理</span>
+                <div class="section-actions">
+                    <button class="action-btn add" id="items-add-btn" onclick="showAddEarnItemModal()">+ 添加</button>
+                </div>
+            </div>
+            <div id="earn-manage-list" class="items-manage-list"></div>
+            <div id="deduct-manage-list" class="items-manage-list" style="display:none;"></div>
         </div>
     </div>
     
@@ -277,10 +268,10 @@
         </div>
     </div>
     
-    <!-- 添加扣取积分项弹窗 -->
+    <!-- 添加扣减积分项弹窗 -->
     <div class="modal" id="add-deduct-item-modal">
         <div class="modal-content">
-            <div class="modal-title" id="deduct-item-modal-title">添加扣取积分项</div>
+            <div class="modal-title" id="deduct-item-modal-title">添加扣减积分项</div>
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">项目名称</label>
@@ -516,6 +507,36 @@
             </div>
             <div class="modal-footer">
                 <button class="modal-btn confirm" style="width:100%;" onclick="checkPassword()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量加减分弹窗 -->
+    <div class="modal" id="batch-operation-modal">
+        <div class="modal-content">
+            <div class="modal-title">批量加减分</div>
+            <div class="modal-body">
+                <div class="batch-actions-bar">
+                    <button class="action-btn edit" onclick="selectAllBatchMembers()">全选</button>
+                    <button class="action-btn cancel" onclick="deselectAllBatchMembers()">全不选</button>
+                    <span class="batch-count" id="batch-selected-count">已选 0 人</span>
+                </div>
+                <div class="batch-member-list" id="batch-member-list">
+                    <!-- 动态加载 -->
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label class="form-label">事件名称</label>
+                    <input type="text" class="form-input" id="batch-event-name" placeholder="例如：课堂表现">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">分值</label>
+                    <input type="number" class="form-input" id="batch-points" placeholder="输入正整数">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeModal('batch-operation-modal')">取消</button>
+                <button class="modal-btn danger" onclick="submitBatchPoints('expense')">扣分</button>
+                <button class="modal-btn confirm" onclick="submitBatchPoints('income')">加分</button>
             </div>
         </div>
     </div>
