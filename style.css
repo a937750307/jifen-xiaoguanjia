@@ -1023,6 +1023,11 @@
             z-index: 1010;
         }
         
+        /* 自定义提示弹窗（showAlert）必须置顶，盖住所有其他弹窗 */
+        #app-alert-modal {
+            z-index: 2000;
+        }
+        
         .modal.show {
             display: flex;
         }

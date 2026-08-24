@@ -1147,29 +1147,39 @@
             }
         }
         
-        // 显示自定义提示弹窗
+        // 显示自定义提示弹窗（复用同一个弹窗，避免多次提示时堆叠）
+        let alertModalEl = null;
         function showAlert(message) {
-            const modal = document.createElement('div');
-            modal.className = 'modal show';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-title">提示</div>
-                    <div class="modal-body">
-                        <p>${message}</p>
+            if (!alertModalEl || !document.body.contains(alertModalEl)) {
+                alertModalEl = document.createElement('div');
+                alertModalEl.id = 'app-alert-modal';
+                alertModalEl.className = 'modal show';
+                alertModalEl.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-title">提示</div>
+                        <div class="modal-body">
+                            <p class="alert-message"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="modal-btn confirm">确定</button>
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button class="modal-btn confirm" onclick="this.closest('.modal').remove()">确定</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            
-            // 点击弹窗外部关闭
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.remove();
-                }
-            });
+                `;
+                // 点击确定关闭
+                alertModalEl.querySelector('.modal-btn').addEventListener('click', function() {
+                    alertModalEl.classList.remove('show');
+                });
+                // 点击弹窗外部关闭
+                alertModalEl.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.remove('show');
+                    }
+                });
+                document.body.appendChild(alertModalEl);
+            }
+            // 用 textContent 更新内容，避免 HTML 注入
+            alertModalEl.querySelector('.alert-message').textContent = message;
+            alertModalEl.classList.add('show');
         }
         
         // 扣取积分
@@ -1649,6 +1659,16 @@
             return !!localStorage.getItem(PASSWORD_KEY);
         }
         
+        // 兼容新旧格式的密码解码：新版为 encodeURIComponent，旧版为 btoa
+        function decodeStoredPassword(stored) {
+            if (typeof stored === 'string' && stored.indexOf('%') !== -1) {
+                try {
+                    return decodeURIComponent(stored);
+                } catch (e) { /* 回退到旧格式解码 */ }
+            }
+            return atob(stored);
+        }
+        
         function showPasswordSettingModal() {
             const statusEl = document.getElementById('password-status');
             const disableBtn = document.getElementById('disable-password-btn');
@@ -1677,7 +1697,8 @@
                 return;
             }
             
-            localStorage.setItem(PASSWORD_KEY, btoa(newPwd));
+            // 使用 encodeURIComponent 编码，支持中文等任意字符
+            localStorage.setItem(PASSWORD_KEY, encodeURIComponent(newPwd));
             closeModal('password-setting-modal');
             showAlert('密码设置成功');
         }
@@ -1692,6 +1713,13 @@
         function showPasswordEntryModal() {
             document.getElementById('entry-password').value = '';
             document.getElementById('password-entry-modal').classList.add('show');
+            // 自动聚焦输入框（手机端自动弹出键盘）
+            setTimeout(function() {
+                const input = document.getElementById('entry-password');
+                if (input && input.offsetParent !== null) {
+                    input.focus();
+                }
+            }, 300);
         }
         
         function checkPassword() {
@@ -1702,10 +1730,18 @@
                 return;
             }
             try {
-                if (atob(stored) === input) {
+                if (decodeStoredPassword(stored) === input) {
                     closeModal('password-entry-modal');
                 } else {
+                    // 密码错误：清空输入框并聚焦，明确提示用户重新输入
+                    const entryInput = document.getElementById('entry-password');
+                    if (entryInput) {
+                        entryInput.value = '';
+                    }
                     showAlert('密码错误');
+                    if (entryInput) {
+                        entryInput.focus();
+                    }
                 }
             } catch (e) {
                 showAlert('密码校验失败');
